@@ -1,21 +1,38 @@
 import React, { useEffect, useMemo, useState } from "react";
-const seed = [
-  { id: 1, dateISO: new Date().toISOString(), player: "Jane Golfer", course: "Riverside Par 3", amountCents: 2500, type: "entry" },
-  { id: 2, dateISO: new Date().toISOString(), player: "Prize Payout", course: "Riverside Par 3", amountCents: -6500, type: "payout" }
-];
 function cents(n){ return (n/100).toFixed(2); }
+const initialMarketing = 0;
+const initialOtherRevenue = 0;
 export default function Accounting(){
   const [rows, setRows] = useState([]);
+  const [marketing, setMarketing] = useState(initialMarketing);
+  const [otherRevenue, setOtherRevenue] = useState(initialOtherRevenue);
   useEffect(() => {
+    // In real app, fetch from backend
     const saved = localStorage.getItem("par3-transactions");
     if (saved) setRows(JSON.parse(saved));
-    else { setRows(seed); localStorage.setItem("par3-transactions", JSON.stringify(seed)); }
+    else setRows([]);
+    const m = localStorage.getItem("par3-marketing");
+    if (m) setMarketing(Number(m));
+    const o = localStorage.getItem("par3-other-revenue");
+    if (o) setOtherRevenue(Number(o));
   }, []);
+  useEffect(() => { localStorage.setItem("par3-marketing", marketing); }, [marketing]);
+  useEffect(() => { localStorage.setItem("par3-other-revenue", otherRevenue); }, [otherRevenue]);
   const totals = useMemo(() => {
-    const revenue = rows.filter(r=>r.type==="entry").reduce((s,r)=>s+r.amountCents,0);
-    const payouts = rows.filter(r=>r.type==="payout").reduce((s,r)=>s+r.amountCents,0);
-    return { revenue, payouts, net: revenue + payouts };
-  }, [rows]);
+    const birdie = rows.filter(r=>r.type==="birdie").reduce((s,r)=>s+r.amountCents,0);
+    const hio = rows.filter(r=>r.type==="hole-in-one").reduce((s,r)=>s+r.amountCents,0);
+    const payouts = rows.filter(r=>r.type==="birdie"||r.type==="hole-in-one").reduce((s,r)=>s+r.amountCents,0);
+    const entries = rows.filter(r=>r.type==="entry").reduce((s,r)=>s+r.amountCents,0);
+    return {
+      entries,
+      payouts,
+      net: entries + otherRevenue - Math.abs(payouts) - marketing,
+      birdie,
+      hio,
+      birdieCount: rows.filter(r=>r.type==="birdie").length,
+      hioCount: rows.filter(r=>r.type==="hole-in-one").length
+    };
+  }, [rows, marketing, otherRevenue]);
   function exportCSV(){
     const header = ["Date","Player/Desc","Course","Type","Amount"];
     const lines = rows.map(r => [
@@ -29,10 +46,25 @@ export default function Accounting(){
   return (
     <div className="max-w-4xl space-y-4">
       <h2 className="text-2xl font-bold">Accounting</h2>
-      <div className="grid sm:grid-cols-3 gap-3">
-        <div className="bg-white p-4 rounded shadow"><div className="text-sm text-gray-500">Revenue</div><div className="text-2xl font-bold">${cents(totals.revenue)}</div></div>
-        <div className="bg-white p-4 rounded shadow"><div className="text-sm text-gray-500">Payouts</div><div className="text-2xl font-bold">${cents(Math.abs(totals.payouts))}</div></div>
+      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
+        <div className="bg-white p-4 rounded shadow"><div className="text-sm text-gray-500">Entries Revenue</div><div className="text-2xl font-bold">${cents(totals.entries)}</div></div>
+        <div className="bg-white p-4 rounded shadow"><div className="text-sm text-gray-500">Other Revenue</div><div className="text-2xl font-bold">${cents(otherRevenue)}</div></div>
+        <div className="bg-white p-4 rounded shadow"><div className="text-sm text-gray-500">Marketing Costs</div><div className="text-2xl font-bold">${cents(marketing)}</div></div>
         <div className={`bg-white p-4 rounded shadow ${totals.net>=0?"":"text-red-600"}`}><div className="text-sm text-gray-500">Net</div><div className="text-2xl font-bold">${cents(totals.net)}</div></div>
+      </div>
+      <div className="grid sm:grid-cols-2 gap-3">
+        <div className="bg-white p-4 rounded shadow"><div className="text-sm text-gray-500">Birdie Payouts</div><div className="text-2xl font-bold">${cents(Math.abs(totals.birdie))} ({totals.birdieCount})</div></div>
+        <div className="bg-white p-4 rounded shadow"><div className="text-sm text-gray-500">Hole-in-One Payouts</div><div className="text-2xl font-bold">${cents(Math.abs(totals.hio))} ({totals.hioCount})</div></div>
+      </div>
+      <div className="flex gap-4">
+        <div className="flex-1">
+          <label className="block text-sm text-gray-500">Marketing Costs</label>
+          <input type="number" className="border p-2 w-full" value={marketing} onChange={e=>setMarketing(Number(e.target.value)||0)} min="0" />
+        </div>
+        <div className="flex-1">
+          <label className="block text-sm text-gray-500">Other Revenue</label>
+          <input type="number" className="border p-2 w-full" value={otherRevenue} onChange={e=>setOtherRevenue(Number(e.target.value)||0)} min="0" />
+        </div>
       </div>
       <div className="flex justify-end"><button onClick={exportCSV} className="bg-blue-600 text-white px-4 py-2 rounded">Export CSV</button></div>
       <table className="w-full bg-white rounded shadow overflow-hidden">

@@ -6,6 +6,9 @@ import Reports from "./pages/Reports";
 import AwardsClaims from "./pages/AwardsClaims";
 import Settings from "./pages/Settings";
 import Accounting from "./pages/Accounting";
+import AwardDetails from "./pages/AwardDetails";
+import TournamentAdmin from "./pages/TournamentAdmin";
+import SpecialsCampaigns from "./pages/SpecialsCampaigns";
 
 export const adminRoutes = [{
   path: "/admin",
@@ -16,7 +19,10 @@ export const adminRoutes = [{
     { path: "players", element: <Players /> },
     { path: "reports", element: <Reports /> },
     { path: "claims", element: <AwardsClaims /> },
+    { path: "claims/:claimId", element: <AwardDetails /> },
     { path: "accounting", element: <Accounting /> },
     { path: "settings", element: <Settings /> },
+    { path: "tournament", element: <TournamentAdmin /> },
+    { path: "specials", element: <SpecialsCampaigns /> },
   ],
 }];

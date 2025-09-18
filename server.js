@@ -4,6 +4,7 @@ import bcrypt from 'bcryptjs';
 import cors from 'cors';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import QRCode from 'qrcode';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -125,7 +126,7 @@ app.post('/api/claims/webhook', (req, res) => {
   res.json({ok: true, claim_id: claim.claim_id});
 });
 
-app.post('/api/claims/:id/verify', auth, (req, res) => {
+app.post('/api/claims/:id/verify', auth, async (req, res) => {
   const claim = store.claims.get(req.params.id);
   if (!claim) return res.status(404).json({error: 'Claim not found'});
   claim.status = 'verified';
@@ -158,10 +159,46 @@ app.post('/api/claims/:id/verify', auth, (req, res) => {
     store.players.set(player.player_id, player);
   }
   
-  wallet.balance_cents += 6500; // $65
-  store.wallets.set(wallet.wallet_id, wallet);
-  
-  res.json({ok: true, wallet_id: wallet.wallet_id});
+  let payoutAmount = 0;
+  let message = '';
+  let qrCodeUrl = null;
+  if (claim.claim_type === 'birdie') {
+    payoutAmount = 6500;
+    message = `You scored a birdie! Use this QR code at your club to redeem your $65 award. Enjoy!`;
+    // Generate QR code for this club/award
+    const qrData = JSON.stringify({
+      club: claim.course_id,
+      player: `${claim.player_first} ${claim.player_last}`,
+      claim_id: claim.claim_id,
+      type: claim.claim_type,
+      amount: payoutAmount
+    });
+    qrCodeUrl = await QRCode.toDataURL(qrData);
+    claim.qr_code = qrCodeUrl;
+    wallet.balance_cents += payoutAmount;
+    store.wallets.set(wallet.wallet_id, wallet);
+  } else if (claim.claim_type === 'hole-in-one') {
+    payoutAmount = 100000;
+    message = `Great Job! $1000.00 has been sent back to the method of payment you used to enter the challenge.`;
+    // No QR code needed for direct payout
+    claim.qr_code = null;
+    // Here you would trigger the real payout logic
+  }
+
+  // Send notification to player (in-app/email)
+  const notification = {
+    id: rid('ntf_'),
+    player: claim.email || claim.phone,
+    title: 'Great Job!',
+    message,
+    qr_code: qrCodeUrl,
+    claim_id: claim.claim_id,
+    sent_at: Date.now(),
+    status: 'sent'
+  };
+  store.notifications.set(notification.id, notification);
+
+  res.json({ok: true, wallet_id: wallet?.wallet_id, qr_code: qrCodeUrl});
 });
 
 // TOURNAMENTS
@@ -173,6 +210,16 @@ app.post('/api/tournaments', auth, (req, res) => {
   const tournament = { id: rid('trn_'), ...req.body, created_at: Date.now() };
   store.tournaments.set(tournament.id, tournament);
   res.json(tournament);
+});
+
+// Add registrants to tournament object for demo
+app.post('/api/tournaments/:id/register', (req, res) => {
+  const t = store.tournaments.get(req.params.id);
+  if (!t) return res.status(404).json({error: 'Tournament not found'});
+  const { name, email, course } = req.body;
+  if (!t.registrants) t.registrants = [];
+  t.registrants.push({ id: rid('reg_'), name, email, course });
+  res.json({ok: true});
 });
 
 // NOTIFICATIONS
@@ -188,6 +235,50 @@ app.post('/api/notifications/send', auth, (req, res) => {
   res.json({ok: true, sent: notification});
 });
 
+// CAMPAIGNS
+app.post('/api/campaigns', auth, (req, res) => {
+  const { course_id, title, message, type } = req.body;
+  const id = rid('cmp_');
+  const campaign = {
+    id,
+    course_id,
+    title,
+    message,
+    type,
+    status: 'draft',
+    created_at: Date.now()
+  };
+  if (!store.campaigns) store.campaigns = new Map();
+  store.campaigns.set(id, campaign);
+  res.json(campaign);
+});
+
+app.post('/api/campaigns/:id/send-for-approval', auth, (req, res) => {
+  const campaign = store.campaigns?.get(req.params.id);
+  if (!campaign) return res.status(404).json({error: 'Campaign not found'});
+  campaign.status = 'pending-approval';
+  // Simulate sending email/push to CRM contact
+  campaign.last_action = 'Sent for approval (demo)';
+  res.json({ok: true, campaign});
+});
+
+app.post('/api/campaigns/:id/approve', auth, (req, res) => {
+  const campaign = store.campaigns?.get(req.params.id);
+  if (!campaign) return res.status(404).json({error: 'Campaign not found'});
+  campaign.status = 'approved';
+  campaign.last_action = 'Approved by CRM (demo)';
+  res.json({ok: true, campaign});
+});
+
+app.post('/api/campaigns/:id/launch', auth, (req, res) => {
+  const campaign = store.campaigns?.get(req.params.id);
+  if (!campaign) return res.status(404).json({error: 'Campaign not found'});
+  campaign.status = 'launched';
+  campaign.last_action = 'Launched to players (demo)';
+  // Simulate sending push/email to players
+  res.json({ok: true, campaign});
+});
+
 // DASHBOARD DATA
 app.get('/api/dashboard/stats', auth, (req, res) => {
   res.json({
@@ -197,6 +288,16 @@ app.get('/api/dashboard/stats', auth, (req, res) => {
     total_payouts: [...store.wallets.values()].reduce((sum, w) => sum + w.balance_cents, 0),
     tournaments: store.tournaments.size
   });
+});
+
+// PLAYER NOTIFICATIONS (fetch by email or phone)
+app.get('/api/player/notifications', (req, res) => {
+  const { email, phone } = req.query;
+  if (!email && !phone) return res.status(400).json({error: 'Missing email or phone'});
+  const notifs = [...store.notifications.values()].filter(n =>
+    (email && n.player === email) || (phone && n.player === phone)
+  );
+  res.json({notifications: notifs});
 });
 
 // Static routes
