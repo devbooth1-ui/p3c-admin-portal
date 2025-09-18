@@ -9,7 +9,7 @@ import Accounting from "./pages/Accounting";
 import AwardDetails from "./pages/AwardDetails";
 import TournamentAdmin from "./pages/TournamentAdmin";
 import SpecialsCampaigns from "./pages/SpecialsCampaigns";
-import Dashboard from "../../pages/Dashboard";
+import Dashboard from "../pages/Dashboard";
 
 export const adminRoutes = [{
   path: "/admin",
