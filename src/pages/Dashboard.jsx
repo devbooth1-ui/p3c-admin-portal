@@ -10,8 +10,19 @@ export default function Dashboard() {
       setLoading(true);
       setError(null);
       try {
-        // TODO: Replace with real token management
-        const token = localStorage.getItem("admin_token");
+        // Auto-login logic for local development
+        let token = localStorage.getItem("admin_token");
+        if (!token) {
+          const res = await fetch("/api/auth/login", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email: "admin@p3c.com", password: "admin123" })
+          });
+          if (!res.ok) throw new Error("Auto-login failed");
+          const data = await res.json();
+          token = data.token;
+          localStorage.setItem("admin_token", token);
+        }
         const res = await fetch("/api/dashboard/stats", {
           headers: { Authorization: `Bearer ${token}` }
         });

@@ -19,6 +19,8 @@ export default function Login({ onLogin }) {
       if (!res.ok) throw new Error("Invalid credentials");
       const data = await res.json();
       localStorage.setItem("admin_token", data.token);
+      // Immediately redirect to dashboard after login
+      window.location.href = "/admin/dashboard";
       if (onLogin) onLogin();
     } catch (e) {
       setError(e.message);
