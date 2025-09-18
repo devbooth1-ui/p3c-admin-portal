@@ -10,6 +10,7 @@ import AwardDetails from "./pages/AwardDetails";
 import TournamentAdmin from "./pages/TournamentAdmin";
 import SpecialsCampaigns from "./pages/SpecialsCampaigns";
 import Dashboard from "../pages/Dashboard";
+import CRM from "../pages/CRM";
 
 export const adminRoutes = [{
   path: "/admin",
@@ -17,14 +18,15 @@ export const adminRoutes = [{
   children: [
     { index: true, element: <Dashboard /> },
     { path: "dashboard", element: <Dashboard /> },
-    { path: "courses", element: <Courses /> },
     { path: "players", element: <Players /> },
-    { path: "reports", element: <Reports /> },
     { path: "claims", element: <AwardsClaims /> },
     { path: "claims/:claimId", element: <AwardDetails /> },
     { path: "accounting", element: <Accounting /> },
-    { path: "settings", element: <Settings /> },
-    { path: "tournaments", element: <TournamentAdmin /> },
+    { path: "courses", element: <Courses /> },
     { path: "campaigns", element: <SpecialsCampaigns /> },
+    { path: "crm", element: <CRM /> },
+    { path: "tournaments", element: <TournamentAdmin /> },
+    { path: "reports", element: <Reports /> },
+    { path: "settings", element: <Settings /> },
   ],
 }];
