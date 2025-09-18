@@ -1,6 +1,5 @@
 import React from "react";
 import { NavLink, Outlet } from "react-router-dom";
-import logo from "../../public/logo.png";
 
 const linkBase = "px-3 py-2 rounded-md text-sm font-medium";
 const active = "bg-green-700 text-white";
@@ -11,7 +10,7 @@ export default function AdminLayout() {
     <div className="min-h-screen flex">
       <aside className="w-64 bg-green-900 text-white p-4">
         <div className="flex items-center gap-2 mb-4">
-          <img src={logo} alt="Par 3 Challenge" className="h-8 w-8 rounded-full bg-white" />
+          <img src="/logo.png" alt="Par 3 Challenge" className="h-8 w-8 rounded-full bg-white" />
           <h1 className="text-xl font-bold">Par3 Admin</h1>
         </div>
         <nav className="flex flex-col gap-2">
