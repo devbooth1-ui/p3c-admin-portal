@@ -34,6 +34,12 @@ const store = {
   const adminId = rid('adm_');
   store.staff.set(adminId, {
     id: adminId,
+    email: 'admin@p3c.com', // Accept both emails for demo
+    password: bcrypt.hashSync('admin123', 10),
+    role: 'admin'
+  });
+  store.staff.set(rid('adm2_'), {
+    id: rid('adm2_'),
     email: 'admin@par3challenge.com',
     password: bcrypt.hashSync('admin123', 10),
     role: 'admin'

@@ -11,11 +11,14 @@ export default function AdminLayout() {
       <aside className="w-64 bg-green-900 text-white p-4">
         <h1 className="text-xl font-bold mb-4">Par3 Admin</h1>
         <nav className="flex flex-col gap-2">
+          <NavLink to="/admin/dashboard" className={({isActive}) => `${linkBase} ${isActive?active:inactive}`}>Dashboard</NavLink>
           <NavLink to="/admin/courses" className={({isActive}) => `${linkBase} ${isActive?active:inactive}`}>Courses</NavLink>
           <NavLink to="/admin/players" className={({isActive}) => `${linkBase} ${isActive?active:inactive}`}>Players</NavLink>
-          <NavLink to="/admin/reports" className={({isActive}) => `${linkBase} ${isActive?active:inactive}`}>Reports</NavLink>
           <NavLink to="/admin/claims" className={({isActive}) => `${linkBase} ${isActive?active:inactive}`}>Award Claims</NavLink>
           <NavLink to="/admin/accounting" className={({isActive}) => `${linkBase} ${isActive?active:inactive}`}>Accounting</NavLink>
+          <NavLink to="/admin/campaigns" className={({isActive}) => `${linkBase} ${isActive?active:inactive}`}>Campaigns</NavLink>
+          <NavLink to="/admin/tournaments" className={({isActive}) => `${linkBase} ${isActive?active:inactive}`}>Tournaments</NavLink>
+          <NavLink to="/admin/reports" className={({isActive}) => `${linkBase} ${isActive?active:inactive}`}>Reports</NavLink>
           <NavLink to="/admin/settings" className={({isActive}) => `${linkBase} ${isActive?active:inactive}`}>Settings</NavLink>
         </nav>
       </aside>

@@ -9,12 +9,14 @@ import Accounting from "./pages/Accounting";
 import AwardDetails from "./pages/AwardDetails";
 import TournamentAdmin from "./pages/TournamentAdmin";
 import SpecialsCampaigns from "./pages/SpecialsCampaigns";
+import Dashboard from "../../pages/Dashboard";
 
 export const adminRoutes = [{
   path: "/admin",
   element: <AdminLayout />,
   children: [
-    { index: true, element: <Courses /> },
+    { index: true, element: <Dashboard /> },
+    { path: "dashboard", element: <Dashboard /> },
     { path: "courses", element: <Courses /> },
     { path: "players", element: <Players /> },
     { path: "reports", element: <Reports /> },
@@ -22,7 +24,7 @@ export const adminRoutes = [{
     { path: "claims/:claimId", element: <AwardDetails /> },
     { path: "accounting", element: <Accounting /> },
     { path: "settings", element: <Settings /> },
-    { path: "tournament", element: <TournamentAdmin /> },
-    { path: "specials", element: <SpecialsCampaigns /> },
+    { path: "tournaments", element: <TournamentAdmin /> },
+    { path: "campaigns", element: <SpecialsCampaigns /> },
   ],
 }];
