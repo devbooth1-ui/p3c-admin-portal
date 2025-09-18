@@ -309,5 +309,16 @@ app.get('/api/player/notifications', (req, res) => {
 // Static routes
 app.get('/', (req, res) => res.redirect('/login.html'));
 
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`P3C Admin Portal running at http://localhost:${PORT}`));
+const PORT = process.env.PORT || 3001;
+
+// Serve React build in production
+if (process.env.NODE_ENV === 'production') {
+  app.use(express.static(path.join(__dirname, 'dist')));
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, 'dist', 'index.html'));
+  });
+}
+
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
