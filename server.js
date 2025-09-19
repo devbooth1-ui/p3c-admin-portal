@@ -307,7 +307,7 @@ app.get('/api/player/notifications', (req, res) => {
 });
 
 // Static routes
-app.get('/', (req, res) => res.redirect('/login.html'));
+app.get('/', (req, res) => res.redirect('/admin/login'));
 
 const PORT = process.env.PORT || 3001;
 

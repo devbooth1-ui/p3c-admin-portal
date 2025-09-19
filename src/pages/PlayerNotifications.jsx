@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { NavLink } from "react-router-dom";
 
 export default function PlayerNotifications({ email, phone }) {
   const [notifications, setNotifications] = useState([]);
@@ -38,7 +39,7 @@ export default function PlayerNotifications({ email, phone }) {
           {n.qr_code && (
             <div><img src={n.qr_code} alt="Award QR Code" className="w-32 h-32 mt-2" /></div>
           )}
-          <a href={`/award/${n.claim_id}`} className="text-blue-600 underline">Click for details</a>
+          <NavLink to={`/award/${n.claim_id}`} className="text-blue-600 underline">Click for details</NavLink>
         </div>
       ))}
       {!loading && notifications.length === 0 && <div className="text-gray-500">No awards or notifications yet.</div>}

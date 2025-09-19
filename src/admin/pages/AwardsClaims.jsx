@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { NavLink } from "react-router-dom";
 
 export default function AwardsClaims() {
   const [claims, setClaims] = useState([]);
@@ -79,7 +80,7 @@ export default function AwardsClaims() {
                 )}
               </td>
               <td className="p-2 border">
-                <a href={`/admin/claims/${claim.claim_id}`} className="text-blue-600 underline">Details</a>
+                <NavLink to={`/admin/claims/${claim.claim_id}`} className="text-blue-600 underline">Details</NavLink>
               </td>
             </tr>
           ))}

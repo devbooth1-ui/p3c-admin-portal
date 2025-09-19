@@ -1,28 +1,22 @@
 import React, { useEffect, useState } from "react";
+import { Navigate } from "react-router-dom";
 
 export default function Dashboard() {
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [noToken, setNoToken] = useState(false);
 
   useEffect(() => {
+    const token = localStorage.getItem("admin_token");
+    if (!token) {
+      setNoToken(true);
+      return;
+    }
     async function fetchStats() {
       setLoading(true);
       setError(null);
       try {
-        // Auto-login logic for local development
-        let token = localStorage.getItem("admin_token");
-        if (!token) {
-          const res = await fetch("/api/auth/login", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ email: "admin@p3c.com", password: "admin123" })
-          });
-          if (!res.ok) throw new Error("Auto-login failed");
-          const data = await res.json();
-          token = data.token;
-          localStorage.setItem("admin_token", token);
-        }
         const res = await fetch("/api/dashboard/stats", {
           headers: { Authorization: `Bearer ${token}` }
         });
@@ -36,6 +30,8 @@ export default function Dashboard() {
     }
     fetchStats();
   }, []);
+
+  if (noToken) return <Navigate to="/admin/login" replace />;
 
   return (
     <section className="space-y-6">
